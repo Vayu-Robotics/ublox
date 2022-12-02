@@ -1,0 +1,34 @@
+# Configuration Settings for ZED-F9R device
+ublox_gps_node:
+  ros__parameters:
+    debug: 4                   # Range 0-4 (0 means no debug statements will print)
+    device: /dev/ttyACM0
+    frame_id: gps
+    dynamic_model: automotive  # default to portable. automotive should be better
+    uart1:
+      baudrate: 460800
+    use_adr: true
+    nav_rate: 1  # should be set to 1
+    rate: 30.0  # max rate on F9R
+
+    
+    save_on_shutdown: true  # send UBX-UPD-SOS command to save the pos to BBR on shutdown
+
+    # TMODE3 Config
+    # tmode3: 1                   # Survey-In Mode
+    # sv_in:
+    #   reset: True               # True: disables and re-enables survey-in (resets)
+    #                             # False: Disables survey-in only if TMODE3 is
+    #                             # disabled
+    #   min_dur: 300              # Survey-In Minimum Duration [s]
+    #   acc_lim: 3.0              # Survey-In Accuracy Limit [m]
+
+    inf:
+      all: true                   # Whether to display all INF messages in console
+    
+    publish:
+      all: true
+      # aid:
+      #   hui: false
+      # nav:
+      #   posecef: false

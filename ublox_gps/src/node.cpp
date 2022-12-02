@@ -453,6 +453,7 @@ void UbloxNode::getRosParams() {
   this->declare_parameter("publish.esf.meas", getRosBoolean(this, "publish.esf.all"));
   this->declare_parameter("publish.esf.raw", getRosBoolean(this, "publish.esf.all"));
   this->declare_parameter("publish.esf.status", getRosBoolean(this, "publish.esf.all"));
+  this->declare_parameter("subscribe.esf.odom", true);
 
   // HNR parameters
   this->declare_parameter("publish.hnr.pvt", true);

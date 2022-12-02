@@ -16,6 +16,7 @@
 #include <ublox_msgs/msg/hnr_pvt.hpp>
 #include <ublox_msgs/msg/nav_att.hpp>
 #include <ublox_msgs/msg/tim_tm2.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 
 #include <ublox_gps/component_interface.hpp>
 #include <ublox_gps/gps.hpp>
@@ -61,6 +62,13 @@ class AdrUdrProduct final : public virtual ComponentInterface {
    */
   void subscribe(std::shared_ptr<ublox_gps::Gps> gps) override;
 
+  /**
+   * @brief Odometry callback
+   * 
+   * @param msg 
+   */
+  void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
+
  private:
   //! Whether or not to enable dead reckoning
   bool use_adr_;
@@ -79,11 +87,15 @@ class AdrUdrProduct final : public virtual ComponentInterface {
   rclcpp::Publisher<ublox_msgs::msg::EsfSTATUS>::SharedPtr esf_status_pub_;
   rclcpp::Publisher<ublox_msgs::msg::HnrPVT>::SharedPtr hnr_pvt_pub_;
 
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr subscription_;
+
   uint16_t nav_rate_;
   uint16_t meas_rate_;
+  double time_tag_delta_;
 
   std::string frame_id_;
   std::shared_ptr<diagnostic_updater::Updater> updater_;
+  std::shared_ptr<ublox_gps::Gps> gps_;
   rclcpp::Node* node_;
 };
 

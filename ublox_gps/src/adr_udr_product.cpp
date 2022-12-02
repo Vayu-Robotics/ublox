@@ -63,11 +63,16 @@ void AdrUdrProduct::getRosParams() {
 }
 
 bool AdrUdrProduct::configureUblox(std::shared_ptr<ublox_gps::Gps> gps) {
+  this->gps_ = gps;
   if (!gps->setUseAdr(use_adr_)) {
     throw std::runtime_error(std::string("Failed to ")
                              + (use_adr_ ? "enable" : "disable") + "use_adr");
   }
   return true;
+}
+
+void AdrUdrProduct::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
+  gps_->sendLinearVelocity(msg->twist.twist.linear.x);
 }
 
 void AdrUdrProduct::subscribe(std::shared_ptr<ublox_gps::Gps> gps) {
@@ -110,12 +115,23 @@ void AdrUdrProduct::subscribe(std::shared_ptr<ublox_gps::Gps> gps) {
     gps->subscribe<ublox_msgs::msg::HnrPVT>([this](const ublox_msgs::msg::HnrPVT &m) { hnr_pvt_pub_->publish(m); },
                                        1);
   }
+
+  if (getRosBoolean(node_, "subscribe.esf.odom")) {
+    this->subscription_ =
+      node_->create_subscription<nav_msgs::msg::Odometry>(
+        "odom",
+        10,
+        std::bind(&AdrUdrProduct::odomCallback, this, std::placeholders::_1));
+  }
 }
 
 void AdrUdrProduct::callbackEsfMEAS(const ublox_msgs::msg::EsfMEAS &m) {
+  // time_tag_delta_ = imu_.header.stamp - m.time_tag;
+  RCLCPP_WARN_STREAM(node_->get_logger(), "Current time delta: " << time_tag_delta_);
   if (getRosBoolean(node_, "publish.esf.meas")) {
     imu_.header.stamp = node_->now();
     imu_.header.frame_id = frame_id_;
+
 
     float deg_per_sec = ::pow(2, -12);
     float m_per_sec_sq = ::pow(2, -10);

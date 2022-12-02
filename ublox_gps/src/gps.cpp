@@ -581,6 +581,22 @@ bool Gps::sendRtcm(const std::vector<uint8_t>& rtcm) {
   return true;
 }
 
+bool Gps::sendLinearVelocity(const double vel) {
+  ublox_msgs::msg::EsfMEAS msg;
+
+  const int32_t vel_ubx_unit = vel * 1e3;  // m/s to 1e-3 m/s
+  uint32_t data;
+  if (vel_ubx_unit > 0) {
+    // 24th bit is the sign bit
+    data = (vel_ubx_unit & 0x7FFFFF) | (1 << 23);
+  } else {
+    data = (-vel_ubx_unit) & 0x7FFFFF;  // sign bit is 0 for negative values
+  }
+  msg.id = msg.DATA_TYPE_SPEED;
+  msg.data.push_back(data);
+  return configure(msg);
+}
+
 bool Gps::poll(uint8_t class_id, uint8_t message_id,
                const std::vector<uint8_t>& payload) {
   if (!worker_) {

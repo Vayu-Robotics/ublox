@@ -21,6 +21,7 @@ find_package(rcl_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(ublox_msgs REQUIRED)
@@ -61,6 +62,7 @@ target_link_libraries(ublox_gps PUBLIC
   ${rtcm_msgs_TARGETS}
   ${sensor_msgs_TARGETS}
   ${std_msgs_TARGETS}
+  ${nav_msgs_TARGETS}
   tf2::tf2
   ${ublox_msgs_TARGETS}
   ublox_serialization::ublox_serialization
@@ -83,6 +85,7 @@ add_executable(ublox_logger src/logger_node_pa.cpp src/raw_data_pa.cpp)
 target_link_libraries(ublox_logger PRIVATE
   rclcpp::rclcpp
   ${std_msgs_TARGETS}
+  ${nav_msgs_TARGETS}
   ublox_gps
 )
 

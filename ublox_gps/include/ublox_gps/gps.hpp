@@ -135,6 +135,15 @@ class Gps final {
   bool sendRtcm(const std::vector<uint8_t> &message);
 
   /**
+   * @brief Send linear velocity to UBX-ESF-MEAS for sensor fusion
+   * 
+   * @param vel (float64/double) velocity in m/s from ROS
+   * @return true 
+   * @return false 
+   */
+  bool sendLinearVelocity(const double vel);
+
+  /**
    * @brief Closes the I/O port, and initiates save on shutdown procedure
    * if enabled.
    */
