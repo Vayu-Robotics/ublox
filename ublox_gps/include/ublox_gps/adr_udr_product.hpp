@@ -81,6 +81,7 @@ class AdrUdrProduct final : public virtual ComponentInterface {
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
   rclcpp::Publisher<sensor_msgs::msg::TimeReference>::SharedPtr time_ref_pub_;
   rclcpp::Publisher<ublox_msgs::msg::NavATT>::SharedPtr nav_att_pub_;
+  rclcpp::Publisher<ublox_msgs::msg::EsfALG>::SharedPtr esf_alg_pub_;
   rclcpp::Publisher<ublox_msgs::msg::EsfINS>::SharedPtr esf_ins_pub_;
   rclcpp::Publisher<ublox_msgs::msg::EsfMEAS>::SharedPtr esf_meas_pub_;
   rclcpp::Publisher<ublox_msgs::msg::EsfRAW>::SharedPtr esf_raw_pub_;
@@ -91,7 +92,8 @@ class AdrUdrProduct final : public virtual ComponentInterface {
 
   uint16_t nav_rate_;
   uint16_t meas_rate_;
-  double time_tag_delta_;
+  uint16_t imu_rec_flag_ = 0;
+  int64_t time_tag_delta_;
 
   std::string frame_id_;
   std::shared_ptr<diagnostic_updater::Updater> updater_;

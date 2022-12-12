@@ -138,10 +138,11 @@ class Gps final {
    * @brief Send linear velocity to UBX-ESF-MEAS for sensor fusion
    * 
    * @param vel (float64/double) velocity in m/s from ROS
+   * @param ttag (uint32_t) time tag value in MEAS frame
    * @return true 
    * @return false 
    */
-  bool sendLinearVelocity(const double vel);
+  bool sendLinearVelocity(const double vel, const uint32_t ttag);
 
   /**
    * @brief Closes the I/O port, and initiates save on shutdown procedure

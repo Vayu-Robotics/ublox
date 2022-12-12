@@ -449,6 +449,7 @@ void UbloxNode::getRosParams() {
 
   // ESF parameters
   this->declare_parameter("publish.esf.all", true);
+  this->declare_parameter("publish.esf.alg", getRosBoolean(this, "publish.esf.all"));
   this->declare_parameter("publish.esf.ins", getRosBoolean(this, "publish.esf.all"));
   this->declare_parameter("publish.esf.meas", getRosBoolean(this, "publish.esf.all"));
   this->declare_parameter("publish.esf.raw", getRosBoolean(this, "publish.esf.all"));

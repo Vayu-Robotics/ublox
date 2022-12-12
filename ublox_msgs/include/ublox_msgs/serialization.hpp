@@ -1062,6 +1062,7 @@ struct UbloxSerializer<ublox_msgs::msg::EsfSTATUS_<ContainerAllocator> > {
                           ublox_msgs::msg::EsfSTATUS_<ContainerAllocator> &m) {
     UbloxIStream stream(const_cast<uint8_t *>(data), count);
     stream.next(m.i_tow);
+    stream.next(m.reserved1);
     stream.next(m.version);
     stream.next(m.fusion_mode);
     stream.next(m.reserved2);
@@ -1083,6 +1084,7 @@ struct UbloxSerializer<ublox_msgs::msg::EsfSTATUS_<ContainerAllocator> > {
     }
     UbloxOStream stream(data, size);
     stream.next(m.i_tow);
+    stream.next(m.reserved1);
     stream.next(m.version);
     stream.next(m.fusion_mode);
     stream.next(m.reserved2);
@@ -1090,6 +1092,44 @@ struct UbloxSerializer<ublox_msgs::msg::EsfSTATUS_<ContainerAllocator> > {
     for (std::size_t i = 0; i < m.sens.size(); ++i) {
       serialize(stream, m.sens[i]);
     }
+  }
+};
+
+
+///
+/// @brief Serializes the EsfALG message which has a repeated block.
+///
+template <typename ContainerAllocator>
+struct UbloxSerializer<ublox_msgs::msg::EsfALG_<ContainerAllocator> > {
+  inline static void read(const uint8_t *data, uint32_t count,
+                          ublox_msgs::msg::EsfALG_<ContainerAllocator> &m) {
+    UbloxIStream stream(const_cast<uint8_t *>(data), count);
+    stream.next(m.i_tow);
+    stream.next(m.version);
+    stream.next(m.flags);
+    stream.next(m.errors);
+    stream.next(m.reserved0);
+    stream.next(m.yaw);
+    stream.next(m.pitch);
+    stream.next(m.roll);
+  }
+
+  inline static uint32_t serializedLength(const ublox_msgs::msg::EsfALG_<ContainerAllocator> &m) {
+    (void)m;
+    return 16;
+  }
+
+  inline static void write(uint8_t *data, uint32_t size,
+                           const ublox_msgs::msg::EsfALG_<ContainerAllocator> &m) {
+    UbloxOStream stream(data, size);
+    stream.next(m.i_tow);
+    stream.next(m.version);
+    stream.next(m.flags);
+    stream.next(m.errors);
+    stream.next(m.reserved0);
+    stream.next(m.yaw);
+    stream.next(m.pitch);
+    stream.next(m.roll);
   }
 };
 

@@ -581,19 +581,17 @@ bool Gps::sendRtcm(const std::vector<uint8_t>& rtcm) {
   return true;
 }
 
-bool Gps::sendLinearVelocity(const double vel) {
+bool Gps::sendLinearVelocity(const double vel, const uint32_t ttag) {
   ublox_msgs::msg::EsfMEAS msg;
 
-  const int32_t vel_ubx_unit = vel * 1e3;  // m/s to 1e-3 m/s
-  uint32_t data;
-  if (vel_ubx_unit > 0) {
-    // 24th bit is the sign bit
-    data = (vel_ubx_unit & 0x7FFFFF) | (1 << 23);
-  } else {
-    data = (-vel_ubx_unit) & 0x7FFFFF;  // sign bit is 0 for negative values
-  }
+  uint32_t vel_ubx_unit = static_cast<uint32_t>(vel * 1e3);  // m/s to 1e-3 m/s
+
+  uint32_t data = vel_ubx_unit & 0xFFFFFF;  // last 24 bits
+  data |= (msg.DATA_TYPE_SPEED << 24);  // 29:24 is the data type;
+
   msg.id = msg.DATA_TYPE_SPEED;
   msg.data.push_back(data);
+  RCLCPP_ERROR_STREAM(logger_, "Sending veocity..." << vel << " ttag: " << ttag << " data: " << data);
   return configure(msg);
 }
 

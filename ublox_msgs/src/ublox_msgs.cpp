@@ -32,7 +32,7 @@
 #include <ublox_msgs/serialization.hpp>
 
 template <typename T>
-std::vector<std::pair<uint8_t,uint8_t> > ublox::Message<T>::keys_;
+std::vector<std::pair<uint8_t, uint8_t> > ublox::Message<T>::keys_;
 
 DECLARE_UBLOX_MESSAGE(ublox_msgs::Class::NAV, ublox_msgs::Message::NAV::ATT,
                       ublox_msgs, NavATT)
@@ -183,6 +183,8 @@ DECLARE_UBLOX_MESSAGE(ublox_msgs::Class::AID, ublox_msgs::Message::AID::HUI,
 
 DECLARE_UBLOX_MESSAGE(ublox_msgs::Class::ESF, ublox_msgs::Message::ESF::INS,
                       ublox_msgs, EsfINS)
+DECLARE_UBLOX_MESSAGE(ublox_msgs::Class::ESF, ublox_msgs::Message::ESF::ALG,
+                      ublox_msgs, EsfALG)
 DECLARE_UBLOX_MESSAGE(ublox_msgs::Class::ESF, ublox_msgs::Message::ESF::MEAS,
                       ublox_msgs, EsfMEAS)
 DECLARE_UBLOX_MESSAGE(ublox_msgs::Class::ESF, ublox_msgs::Message::ESF::RAW,
@@ -199,5 +201,5 @@ DECLARE_UBLOX_MESSAGE(ublox_msgs::Class::HNR, ublox_msgs::Message::HNR::PVT,
 
 // TIM messages
 DECLARE_UBLOX_MESSAGE(ublox_msgs::Class::TIM, ublox_msgs::Message::TIM::TM2,
-		      ublox_msgs, TimTM2)
+                      ublox_msgs, TimTM2)
 

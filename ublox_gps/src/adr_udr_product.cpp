@@ -39,6 +39,9 @@ AdrUdrProduct::AdrUdrProduct(uint16_t nav_rate, uint16_t meas_rate, const std::s
   if (getRosBoolean(node_, "publish.nav.att")) {
     nav_att_pub_ = node_->create_publisher<ublox_msgs::msg::NavATT>("navatt", 1);
   }
+  if (getRosBoolean(node_, "publish.esf.alg")) {
+    esf_alg_pub_ = node_->create_publisher<ublox_msgs::msg::EsfALG>("esfalg", 1);
+  }
   if (getRosBoolean(node_, "publish.esf.ins")) {
     esf_ins_pub_ = node_->create_publisher<ublox_msgs::msg::EsfINS>("esfins", 1);
   }
@@ -72,13 +75,23 @@ bool AdrUdrProduct::configureUblox(std::shared_ptr<ublox_gps::Gps> gps) {
 }
 
 void AdrUdrProduct::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
-  gps_->sendLinearVelocity(msg->twist.twist.linear.x);
+  const int32_t sec = msg->header.stamp.sec;
+  const uint32_t nanosec = msg->header.stamp.nanosec;
+  const int64_t millis = (sec * 1e3 + nanosec * 1e-6) - time_tag_delta_;
+  const uint32_t ttag = static_cast<uint32_t>(millis);
+  gps_->sendLinearVelocity(msg->twist.twist.linear.x, ttag);
 }
 
 void AdrUdrProduct::subscribe(std::shared_ptr<ublox_gps::Gps> gps) {
   // Subscribe to NAV ATT messages
   if (getRosBoolean(node_, "publish.nav.att")) {
     gps->subscribe<ublox_msgs::msg::NavATT>([this](const ublox_msgs::msg::NavATT &m) { nav_att_pub_->publish(m); },
+                                       1);
+  }
+
+  // Subscribe to ESF ALG messages
+  if (getRosBoolean(node_, "publish.esf.alg")) {
+    gps->subscribe<ublox_msgs::msg::EsfALG>([this](const ublox_msgs::msg::EsfALG &m) { esf_alg_pub_->publish(m); },
                                        1);
   }
 
@@ -127,97 +140,63 @@ void AdrUdrProduct::subscribe(std::shared_ptr<ublox_gps::Gps> gps) {
 
 void AdrUdrProduct::callbackEsfMEAS(const ublox_msgs::msg::EsfMEAS &m) {
   // time_tag_delta_ = imu_.header.stamp - m.time_tag;
-  RCLCPP_WARN_STREAM(node_->get_logger(), "Current time delta: " << time_tag_delta_);
+  // RCLCPP_WARN_STREAM(node_->get_logger(), "Current time delta: " << time_tag_delta_);
+  // RCLCPP_WARN_STREAM(node_->get_logger(), "msg: " << m);
+
   if (getRosBoolean(node_, "publish.esf.meas")) {
-    imu_.header.stamp = node_->now();
+    const auto sys_time = node_->now();
+    const uint64_t nanoseconds = sys_time.nanoseconds();
+    const uint64_t millis = nanoseconds * 1e-6;
+    const uint32_t millis_truncated = millis & 0xFFFFFFFF;
+    time_tag_delta_ = millis_truncated - m.time_tag;
+
+    imu_.header.stamp = sys_time;
     imu_.header.frame_id = frame_id_;
 
-
-    float deg_per_sec = ::pow(2, -12);
+    float rad_per_sec = ::pow(2, -12) * M_PI / 180.0F;
     float m_per_sec_sq = ::pow(2, -10);
 
     std::vector<unsigned int> imu_data = m.data;
     for (unsigned int datapoint : imu_data) {
-      unsigned int data_type = datapoint >> 24; //grab the last six bits of data
-      double data_sign = (datapoint & (1 << 23)); //grab the sign (+/-) of the rest of the data
-      unsigned int data_value = datapoint & 0x7FFFFF; //grab the rest of the data...should be 23 bits
-
-      if (data_sign == 0) {
-        data_sign = -1;
-      } else {
-        data_sign = 1;
-      }
-
-      // RCLCPP_INFO(node_->get_logger(), "data sign (+/-): %f", data_sign); //either 1 or -1....set by bit 23 in the data bitarray
+      unsigned int data_type = datapoint >> 24;  // grab the last six bits of data
+      int32_t data_value = static_cast<int32_t>(datapoint << 8);
+      data_value >>= 8;  // carries the sign correctly
 
       imu_.orientation_covariance[0] = -1;
       imu_.linear_acceleration_covariance[0] = -1;
       imu_.angular_velocity_covariance[0] = -1;
 
       if (data_type == 14) {
-        if (data_sign == 1) {
-	  imu_.angular_velocity.x = 2048 - data_value * deg_per_sec;
-        } else {
-          imu_.angular_velocity.x = data_sign * data_value * deg_per_sec;
-        }
+        imu_.angular_velocity.x = data_value * rad_per_sec;
+        imu_rec_flag_ |= 0b00000001;
       } else if (data_type == 16) {
-        //RCLCPP_INFO(node_->get_logger(), "data_sign: %f", data_sign);
-        //RCLCPP_INFO(node_->get_logger(), "data_value: %u", data_value * m);
-        if (data_sign == 1) {
-	  imu_.linear_acceleration.x = 8191 - data_value * m_per_sec_sq;
-        } else {
-          imu_.linear_acceleration.x = data_sign * data_value * m_per_sec_sq;
-        }
+        imu_.linear_acceleration.x = data_value * m_per_sec_sq;
+        imu_rec_flag_ |= 0b00000010;
       } else if (data_type == 13) {
-        if (data_sign == 1) {
-	  imu_.angular_velocity.y = 2048 - data_value * deg_per_sec;
-        } else {
-          imu_.angular_velocity.y = data_sign * data_value * deg_per_sec;
-        }
+        imu_.angular_velocity.y = data_value * rad_per_sec;
+        imu_rec_flag_ |= 0b00000100;
       } else if (data_type == 17) {
-        if (data_sign == 1) {
-	  imu_.linear_acceleration.y = 8191 - data_value * m_per_sec_sq;
-        } else {
-          imu_.linear_acceleration.y = data_sign * data_value * m_per_sec_sq;
-        }
+        imu_.linear_acceleration.y = data_value * m_per_sec_sq;
+        imu_rec_flag_ |= 0b00001000;
       } else if (data_type == 5) {
-        if (data_sign == 1) {
-	  imu_.angular_velocity.z = 2048 - data_value * deg_per_sec;
-        } else {
-          imu_.angular_velocity.z = data_sign * data_value * deg_per_sec;
-        }
+        imu_.angular_velocity.z = data_value * rad_per_sec;
+        imu_rec_flag_ |= 0b00010000;
       } else if (data_type == 18) {
-        if (data_sign == 1) {
-	  imu_.linear_acceleration.z = 8191 - data_value * m_per_sec_sq;
-        } else {
-          imu_.linear_acceleration.z = data_sign * data_value * m_per_sec_sq;
-        }
+        imu_.linear_acceleration.z = data_value * m_per_sec_sq;
+        imu_rec_flag_ |= 0b00100000;
       } else if (data_type == 12) {
         // RCLCPP_INFO("Temperature in celsius: %f", data_value * deg_c);
       } else {
         RCLCPP_INFO(node_->get_logger(), "data_type: %u", data_type);
         RCLCPP_INFO(node_->get_logger(), "data_value: %u", data_value);
       }
+    }
 
-      // create time ref message and put in the data
-      //t_ref_.header.seq = m.risingEdgeCount;
-      //t_ref_.header.stamp = node_->now();
-      //t_ref_.header.frame_id = frame_id_;
-
-      //t_ref_.time_ref = rclcpp::Time((m.wnR * 604800 + m.towMsR / 1000), (m.towMsR % 1000) * 1000000 + m.towSubMsR);
-
-      //std::ostringstream src;
-      //src << "TIM" << int(m.ch);
-      //t_ref_.source = src.str();
-
-      t_ref_.header.stamp = node_->now(); // create a new timestamp
-      t_ref_.header.frame_id = frame_id_;
-
-      time_ref_pub_->publish(t_ref_);
+    if (imu_rec_flag_ == 0b00111111) {
       imu_pub_->publish(imu_);
+      imu_rec_flag_ = 0;
     }
   }
-
 }
 
 }  // namespace ublox_node

@@ -97,6 +97,7 @@
 #include <ublox_msgs/msg/aid_eph.hpp>
 #include <ublox_msgs/msg/aid_hui.hpp>
 
+#include <ublox_msgs/msg/esf_alg.hpp>
 #include <ublox_msgs/msg/esf_ins.hpp>
 #include <ublox_msgs/msg/esf_meas.hpp>
 #include <ublox_msgs/msg/esf_raw.hpp>
@@ -235,6 +236,7 @@ namespace Message {
   }  // namespace MON
 
   namespace ESF {
+    static const uint8_t ALG = ublox_msgs::msg::EsfALG::MESSAGE_ID;
     static const uint8_t INS = ublox_msgs::msg::EsfINS::MESSAGE_ID;
     static const uint8_t MEAS = ublox_msgs::msg::EsfMEAS::MESSAGE_ID;
     static const uint8_t RAW = ublox_msgs::msg::EsfRAW::MESSAGE_ID;
