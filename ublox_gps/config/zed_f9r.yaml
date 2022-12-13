@@ -2,10 +2,11 @@
 ublox:
   ublox_gps_node:
     ros__parameters:
-      debug: 0                   # Range 0-4 (0 means no debug statements will print)
+      debug: 4                   # Range 0-4 (0 means no debug statements will print)
       device: /dev/ttyACM0
       frame_id: gps
       dynamic_model: automotive  # default to portable. automotive should be better
+      enable_ppp: true
       uart1:
         baudrate: 460800
       use_adr: true
@@ -15,8 +16,9 @@ ublox:
         galileo: true
         glonass: true
         gps: true
+        sbas: true
    
-      save_on_shutdown: true  # send UBX-UPD-SOS command to save the pos to BBR on shutdown
+      save_on_shutdown: false  # send UBX-UPD-SOS command to save the pos to BBR on shutdown
 
       # TMODE3 Config
       # tmode3: 1                   # Survey-In Mode

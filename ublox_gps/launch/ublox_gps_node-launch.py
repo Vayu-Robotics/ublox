@@ -54,7 +54,8 @@ def generate_launch_description():
         output='both',
         namespace='ublox',
         remappings=[
-            ('/rtcm', '/ntrip_client/rtcm')],
+            ('/rtcm', '/ntrip_client/rtcm'),
+            ('/ublox/odom', '/odom')],
         parameters=[params])
     ntrip_client = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(

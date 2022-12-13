@@ -555,6 +555,7 @@ bool Gps::setPpp(bool enable) {
   RCLCPP_DEBUG(logger_,"%s PPP", (enable ? "Enabling" : "Disabling"));
 
   ublox_msgs::msg::CfgNAVX5 msg;
+  msg.version = 2;
   msg.use_ppp = enable;
   msg.mask1 = ublox_msgs::msg::CfgNAVX5::MASK1_PPP;
   return configure(msg);
@@ -571,6 +572,7 @@ bool Gps::setUseAdr(bool enable) {
   RCLCPP_DEBUG(logger_, "%s ADR/UDR", (enable ? "Enabling" : "Disabling"));
 
   ublox_msgs::msg::CfgNAVX5 msg;
+  msg.version = 2;
   msg.use_adr = enable;
   msg.mask2 = ublox_msgs::msg::CfgNAVX5::MASK2_ADR;
   return configure(msg);
