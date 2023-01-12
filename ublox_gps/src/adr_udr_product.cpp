@@ -187,8 +187,11 @@ void AdrUdrProduct::callbackEsfMEAS(const ublox_msgs::msg::EsfMEAS &m) {
       } else if (data_type == 12) {
         // RCLCPP_INFO("Temperature in celsius: %f", data_value * deg_c);
       } else {
-        RCLCPP_INFO(node_->get_logger(), "data_type: %u", data_type);
-        RCLCPP_INFO(node_->get_logger(), "data_value: %u", data_value);
+        if (data_type == 10) {
+          RCLCPP_INFO_ONCE(node_->get_logger(), "data_type: %u; value: %u", data_type, data_value);
+        } else if (data_type == 11) {
+          RCLCPP_INFO_ONCE(node_->get_logger(), "Odometry velocity data_type: %u; value: %u", data_type, data_value);
+        }
       }
     }
 
